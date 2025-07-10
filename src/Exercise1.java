@@ -1,34 +1,56 @@
 import java.util.*;
 
-public class Exercise1 {
+class Edge implements Comparable<Edge> {
+    int src, dest, weight;
 
-    public static int coinChange(int[] coins, int amount) {
-        int[] dp = new int[amount + 1];
-        int[] lastCoinUsed = new int[amount + 1]; // כדי לשחזר את המטבעות
-        Arrays.fill(dp, amount + 1);
-        dp[0] = 0;
+    public Edge(int u, int v, int w) {
+        src = u;
+        dest = v;
+        weight = w;
+    }
 
-        for (int coin : coins) {
-            for (int i = coin; i <= amount; i++) {
-                if (dp[i - coin] + 1 < dp[i]) {
-                    dp[i] = dp[i - coin] + 1;
-                    lastCoinUsed[i] = coin;
+    public int compareTo(Edge other) {
+        return this.weight - other.weight;
+    }
+}
+
+class Graph {
+    int V;
+    List<Edge> edges = new ArrayList<>();
+
+    public Graph(int V) {
+        this.V = V;
+    }
+
+    public void addEdge(int u, int v, int w) {
+        edges.add(new Edge(u, v, w));
+    }
+
+    public List<Edge> primMST() {
+        boolean[] visited = new boolean[V];
+        List<Edge> mst = new ArrayList<>();
+        PriorityQueue<Edge> pq = new PriorityQueue<>();
+
+        visited[0] = true;
+        for (Edge e : edges) {
+            if (e.src == 0 || e.dest == 0) pq.add(e);
+        }
+
+        while (!pq.isEmpty() && mst.size() < V - 1) {
+            Edge e = pq.poll();
+            if (visited[e.src] && visited[e.dest]) continue;
+
+            mst.add(e);
+            int newNode = visited[e.src] ? e.dest : e.src;
+            visited[newNode] = true;
+
+            for (Edge edge : edges) {
+                if ((edge.src == newNode && !visited[edge.dest]) ||
+                        (edge.dest == newNode && !visited[edge.src])) {
+                    pq.add(edge);
                 }
             }
         }
 
-        // הדפסה של המטבעות שנבחרו בפועל
-        if (dp[amount] <= amount) {
-            System.out.print("🔹 Coins used: ");
-            int curr = amount;
-            while (curr > 0) {
-                int coin = lastCoinUsed[curr];
-                System.out.print(coin + " ");
-                curr -= coin;
-            }
-            System.out.println();
-        }
-
-        return (dp[amount] > amount) ? -1 : dp[amount];
+        return mst;
     }
-}
