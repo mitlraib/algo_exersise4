@@ -54,3 +54,57 @@ class Graph {
 
         return mst;
     }
+
+    public List<Integer> getOddDegreeVertices(List<Edge> mst) {
+        int[] degree = new int[V];
+        for (Edge e : mst) {
+            degree[e.src]++;
+            degree[e.dest]++;
+        }
+
+        List<Integer> odds = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            if (degree[i] % 2 == 1) odds.add(i);
+        }
+        return odds;
+    }
+
+    public List<Edge> getMinimumMatching(List<Integer> odds) {
+        List<Edge> matching = new ArrayList<>();
+        boolean[] used = new boolean[V];
+
+        for (int i = 0; i < odds.size(); i++) {
+            if (used[odds.get(i)]) continue;
+
+            int u = odds.get(i), minW = Integer.MAX_VALUE, minV = -1;
+            for (int j = i + 1; j < odds.size(); j++) {
+                int v = odds.get(j);
+                if (!used[v]) {
+                    int w = getEdgeWeight(u, v);
+                    if (w < minW) {
+                        minW = w;
+                        minV = v;
+                    }
+                }
+            }
+
+            if (minV != -1) {
+                matching.add(new Edge(u, minV, minW));
+                used[u] = used[minV] = true;
+            }
+        }
+
+        return matching;
+    }
+
+    private int getEdgeWeight(int u, int v) {
+        for (Edge e : edges) {
+            if ((e.src == u && e.dest == v) || (e.src == v && e.dest == u))
+                return e.weight;
+        }
+        return Integer.MAX_VALUE;
+    }
+}
+
+
+
